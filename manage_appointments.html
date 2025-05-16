@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pārvaldīt apmeklējumu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Pārvaldīt apmeklējumu</h1>
+        <form method="POST">
+            <label for="status">Statuss</label>
+            <select id="status" name="status" required>
+                <option value="jauns" {% if appointment.status == 'jauns' %}selected{% endif %}>Jauns</option>
+                <option value="apstiprināts" {% if appointment.status == 'apstiprināts' %}selected{% endif %}>Apstiprināts</option>
+                <option value="procesā" {% if appointment.status == 'procesā' %}selected{% endif %}>Procesā</option>
+                <option value="pabeigts" {% if appointment.status == 'pabeigts' %}selected{% endif %}>Pabeigts</option>
+            </select>
+            <button type="submit">Saglabāt statusu</button>
+        </form>
+    </div>
+</body>
+</html>

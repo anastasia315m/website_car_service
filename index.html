@@ -1,0 +1,33 @@
+<!-- 
+
+GALVENĀ LAPA:
+- bilde
+- autoservisa nosaukums
+- foršs uzraksts
+- pogas "Pieteikties" vai "Reģistrēties"
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>autopakalpojumi</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <img src="static/background1.jpg" height="650px" />
+    <div class="container">
+      <h1>Brutāls Autoserviss</h1>
+      <p>Tikai patiesi BRUTĀLIEM autovadītājiem!</p>
+      <p>
+        <a href="{{ url_for('login') }}">Pieteikties</a> vai
+        <a href="{{ url_for('register') }}">Reģistrēties</a>
+      </p>
+    </div>
+  </body>
+</html>

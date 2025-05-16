@@ -1,0 +1,68 @@
+<!-- 
+
+KLIENTA PIETEIKUMU PĀRSKATS:
+- virsraksts
+- poga "Pievienot jaunu pieteikumu"
+- tabula ar virsrakstiem ar pieteikuma informāciju
+- paši pieteikumi (no datubāzes)
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Te ir tavi pieteikumi!</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Te ir tavi pieteikumi!</h1>
+      {% if session['role'] == 'klients' %}
+      <p>
+        <a href="{{ url_for('submit_appointment') }}"
+          >Pievienot jaunu pieteikumu</a
+        >
+      </p>
+      {% endif %}
+
+      <table>
+        <thead>
+          <tr>
+            <th>Problēma</th>
+            <th>Automašīnas marka</th>
+            <th>Auto reģistrācijas numurs</th>
+            <th>Pieteikuma datums un laiks</th>
+            <th>Pieteikuma statuss</th>
+            {% if session['role'] == 'administrators' %}
+            <th>Akcijas</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in appointments %}
+          <tr>
+            <td>{{ app.issue }}</td>
+            <td>{{ app.car_model }}</td>
+            <td>{{ app.reg_number }}</td>
+            <td>{{ app.request_date }}</td>
+            <td>{{ app.status }}</td>
+            {% if session['role'] == 'administrators' %}
+            <td>
+              <a href="{{ url_for('manage_appointments', app_id=app.id) }}"
+                >Pārvaldīt</a
+              >
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p><a href="{{ url_for('profile') }}" class="button">Atpakaļ uz profilu</a></p>
+    </div>
+  </body>
+</html>

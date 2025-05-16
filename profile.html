@@ -1,0 +1,45 @@
+<!-- 
+ 
+LIETOTĀJA PROFILS AR VIŅA PERSONĪGO INFORMĀCIJU:
+- foršs virsraksts
+- vārds, uzvārds
+- dzimšanas datums
+- personas kods
+- telefona numurs
+- autovadītāja apliecības kods
+
+Pogas:
+- "Rediģēt profilu"
+- "Apskatīt savus pieteikumus"
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profils</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>{{ client.first_name }} {{ client.last_name }}, laipni lūgti!</h1>
+      <p><strong>Dzimšanas datums:</strong> {{ client.birth_date }}</p>
+      <p><strong>Personas kods:</strong> {{ client.personal_code }}</p>
+      <p><strong>Telefona numurs:</strong> {{ client.phone_number }}</p>
+      <p>
+        <strong>Vadītāja apliecības kods:</strong> {{ client.driving_license }}
+      </p>
+
+      <p><a href="{{ url_for('edit_profile') }}">Rediģēt profilu</a></p>
+      <p>
+        <a href="{{ url_for('appointments') }}">Apskatīt savus pieteikumus</a>
+      </p>
+      <p><a href="{{ url_for('login') }}" class="button">Iziet</a></p>
+    </div>
+  </body>
+</html>

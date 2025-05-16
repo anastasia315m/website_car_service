@@ -1,0 +1,39 @@
+<!-- 
+
+JAUNA PIETEIKUMA PIEVIENOŠANA:
+- virsraksts
+- forma ar lodziņiem, lai uzrakstītu pieteikumu
+- poga "Pieteikt"
+- poga "Iziet"
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pieteikt apmeklējumu</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Pieteic savu auto mūsu servisā, mēs palīdzēsim!</h1>
+      <form method="POST">
+        <label for="issue">Apraksti savu problēmu:</label>
+        <input type="text" id="issue" name="issue" required />
+
+        <label for="car_model">Tava auto marka:</label>
+        <input type="text" id="car_model" name="car_model" required />
+
+        <label for="reg_number">Auto reģistrācijas numurs:</label>
+        <input type="text" id="reg_number" name="reg_number" required />
+
+        <button type="submit">Pieteikt</button>
+      </form>
+    </div>
+  </body>
+</html>

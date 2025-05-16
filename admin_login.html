@@ -1,0 +1,36 @@
+<!-- 
+
+ADMINISTRATORU (SERVISA DARBINIEKU) AUTORIZĀCIJA:
+- virsraksts
+- formas lauciņi:
+  lietotājvārds
+  parole
+- poga "Ieiet"
+- poga "Neesmu administrators", kas ved uz parasto klientu autorizāciju
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administratora pieteikšanās</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Čau, Administrator!</h1>
+      <form method="POST">
+        <label for="username">Lietotājvārds</label>
+        <input type="text" id="username" name="username" required />
+
+        <label for="password">Parole</label>
+        <input type="password" id="password" name="password" required />
+
+        <button type="submit">Ieiet</button>
+      </form>
+      <p><a href="{{ url_for('register') }}">Neesmu administrators</a></p>
+    </div>
+  </body>
+</html>

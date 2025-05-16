@@ -1,0 +1,38 @@
+<!-- 
+
+AUTORIZĀCIJA:
+- virsraksts
+- lietotājvārds + lodziņš
+- parole + lodziņš
+- poga "Ieiet"
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pieteikšanās</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <p><a href="{{ url_for('admin_login') }}" class="admin-button">Esmu administrators</a></p>
+      <h1>Pieteikšanās brutālajā profilā</h1>
+      <form method="POST">
+        <label for="username">Lietotājvārds</label>
+        <input type="text" id="username" name="username" required />
+
+        <label for="password">Parole</label>
+        <input type="password" id="password" name="password" required />
+
+        <button type="submit">Ieiet</button>
+      </form>
+      <p>Nav konta? <a href="{{ url_for('register') }}">Reģistrējies</a></p>
+    </div>
+  </body>
+</html>

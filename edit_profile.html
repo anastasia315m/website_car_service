@@ -1,0 +1,83 @@
+<!-- 
+
+PROFILA REDIĢĒŠANA:
+- virsraksts
+- lauciņi ar jau ievadīto profila informāciju
+- poga "Saglabāt izmaiņas"
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rediģēt profilu</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Rediģēt profilu</h1>
+      <form method="POST">
+        <label for="first_name">Vārds</label>
+        <input
+          type="text"
+          id="first_name"
+          name="first_name"
+          value="{{ client.first_name }}"
+          required
+        />
+
+        <label for="last_name">Uzvārds</label>
+        <input
+          type="text"
+          id="last_name"
+          name="last_name"
+          value="{{ client.last_name }}"
+          required
+        />
+
+        <label for="birth_date">Dzimšanas datums</label>
+        <input
+          type="date"
+          id="birth_date"
+          name="birth_date"
+          value="{{ client.birth_date }}"
+          required
+        />
+
+        <label for="personal_code">Personas kods</label>
+        <input
+          type="text"
+          id="personal_code"
+          name="personal_code"
+          value="{{ client.personal_code }}"
+          required
+        />
+
+        <label for="phone_number">Telefona numurs</label>
+        <input
+          type="tel"
+          id="phone_number"
+          name="phone_number"
+          value="{{ client.phone_number }}"
+          required
+        />
+
+        <label for="driving_license">Vadītāja apliecības kods</label>
+        <input
+          type="text"
+          id="driving_license"
+          name="driving_license"
+          value="{{ client.driving_license }}"
+          required
+        />
+
+        <button type="submit">Saglabāt izmaiņas</button>
+      </form>
+    </div>
+  </body>
+</html>

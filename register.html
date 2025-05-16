@@ -1,0 +1,68 @@
+<!-- 
+
+JAUNO LIETOTĀJU REĢISTRĀCIJA:
+- virsraksts
+- formas lauciņi:
+  vārds
+  uzvārds
+  dzimšanas datums (formāts - date)
+  personas kods
+  telefona nr
+  vadītāja apliecības kods
+  lietotājvārds 
+  parole (formāts - password)
+- poga "Reģistrēties"
+- poga "Pieteikties"
+
+-->
+
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reģistrācija</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Kļūsti par mūsu klientu!</h1>
+      <form method="POST">
+        <label for="first_name">Vārds</label>
+        <input type="text" id="first_name" name="first_name" required />
+
+        <label for="last_name">Uzvārds</label>
+        <input type="text" id="last_name" name="last_name" required />
+
+        <label for="birth_date">Dzimšanas datums</label>
+        <input type="date" id="birth_date" name="birth_date" required />
+
+        <label for="personal_code">Personas kods</label>
+        <input type="text" id="personal_code" name="personal_code" required />
+
+        <label for="phone_number">Telefona numurs</label>
+        <input type="tel" id="phone_number" name="phone_number" required />
+
+        <label for="driving_license">Vadītāja apliecības kods</label>
+        <input
+          type="text"
+          id="driving_license"
+          name="driving_license"
+          required
+        />
+
+        <label for="username">Lietotājvārds</label>
+        <input type="text" id="username" name="username" required />
+
+        <label for="password">Parole (nevienam nesaki)</label>
+        <input type="password" id="password" name="password" required />
+
+        <button type="submit">Reģistrēties</button>
+      </form>
+      <p>Jau ir konts? <a href="{{ url_for('login') }}">Pieteikties</a></p>
+    </div>
+  </body>
+</html>

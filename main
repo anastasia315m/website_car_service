@@ -1,0 +1,224 @@
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+
+import sqlite3
+from datetime import datetime # lai piefiksētu datumu un laiku, kad tika pievienots jauns pieteikums
+
+app = Flask(__name__)
+app.secret_key = 'some_random_secret_key' # sesijas datu saglabāšanai
+
+# --- FUNKCIJAS ---
+
+# DATUBĀZE
+def create_db():
+    conn = sqlite3.connect('autoserviss.db')
+    c = conn.cursor()
+
+    # TABULA AR USERS (autorizācijai)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL) 
+    ''')
+
+    # TABULA AR KLIENTU PERSONĪGO INFO
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS clients (
+        id INTEGER PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        birth_date TEXT NOT NULL,
+        personal_code TEXT NOT NULL,
+        phone_number TEXT NOT NULL,
+        driving_license TEXT NOT NULL,
+        user_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users(id))
+    ''')
+
+    # TABULA AR KLIENTU PIETEIKUMIEM
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS appointments (
+        id INTEGER PRIMARY KEY,
+        client_id INTEGER,
+        issue TEXT NOT NULL,
+        car_model TEXT NOT NULL,
+        reg_number TEXT NOT NULL,
+        request_date TEXT NOT NULL,
+        status TEXT NOT NULL,
+        FOREIGN KEY (client_id) REFERENCES clients(id))
+    ''')
+
+    conn.commit()
+    conn.close()
+
+create_db()
+
+# DATUBĀZES SAVIENOJUMS
+def database_connection():
+    conn = sqlite3.connect('autoserviss.db')
+    conn.row_factory = sqlite3.Row # ļauj piekļūt kolonnām pēc nosaukuma, nevis pēc kārtas numura
+    return conn
+
+# GALVENAIS LOGS
+@app.route('/')
+def index():
+    return redirect(url_for('profile')) if 'username' in session else render_template('index.html')
+    # Ja lietotājs jau ir iegājis sitēmā, viņš tiek pārsūtīts uz savu profilu
+    # Ja lietotājs vēl nav iegājis sistēmā, rāda galveno logu
+
+# AUTORIZĒŠANĀS
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST': # ja dati ir ievadīti
+        conn = database_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ? AND password = ?', 
+                            (request.form['username'], request.form['password'])).fetchone() # pārbauda, vai datubāzē (tabulā "users") ir tāds lietotājs
+        conn.close()
+        if user: # ja user ir atrasts datubāzē
+            session.update({'username': user['username'], 'role': user['role']}) # sesijā saglabājās lietotāja informācija 
+            return redirect(url_for('profile')) # pāriet uz profila logu
+        else: # ja user nav atrasts datubāzē
+            flash('Nepareizs lietotājvārds vai parole!', 'kļūda')
+    return render_template('login.html')
+
+# JAUNA LIETOTĀJA REĢISTRĀCIJA
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST': # ja dati ir ievadīti
+        data = request.form # saņem ievadītus datus no formas
+        conn = database_connection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', 
+                     (data['username'], data['password'], 'klients')) # datubāzē (tabulā "users") ievada jaunu ievadītu info
+        user_id = cursor.lastrowid # saņem jauna lietotāja ID
+        cursor.execute('''INSERT INTO clients (first_name, last_name, birth_date, personal_code, phone_number, driving_license, user_id) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?)''', (data['first_name'], data['last_name'], data['birth_date'], data['personal_code'], 
+                                                      data['phone_number'], data['driving_license'], user_id)) # pievieno ievadīto info par klientu datubāzē tabulā "clients"
+        conn.commit()
+        conn.close()
+        flash('Registration successful!', 'success')
+        return redirect(url_for('login')) # pārsūta lietotāju uz autorizēšanās logu
+    return render_template('register.html')
+
+@app.route('/profile')
+def profile():
+    if 'username' not in session:
+        redirect(url_for('login'))
+    conn = database_connection()
+    user = conn.execute('SELECT * FROM users WHERE username = ?', (session['username'],)).fetchone()
+    client = conn.execute('SELECT * FROM clients WHERE user_id = ?', (user['id'],)).fetchone()
+    conn.close()
+    return render_template('profile.html', user=user, client=client)
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    conn = database_connection()
+    client = conn.execute('SELECT * FROM clients WHERE user_id = (SELECT id FROM users WHERE username = ?)', 
+                          (session['username'],)).fetchone()
+    if request.method == 'POST':
+        data = request.form
+        conn.execute('UPDATE clients SET first_name=?, last_name=?, birth_date=?, personal_code=?, phone_number=?, driving_license=? WHERE id=?',
+                     (data['first_name'], data['last_name'], data['birth_date'], data['personal_code'], data['phone_number'], data['driving_license'], client['id']))
+        conn.commit()
+        conn.close()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('profile'))
+    conn.close()
+    return render_template('edit_profile.html', client=client)
+
+@app.route('/appointments')
+def appointments():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    conn = database_connection()
+    user = conn.execute('SELECT * FROM users WHERE username = ?', (session['username'],)).fetchone()
+    app_list = conn.execute('SELECT * FROM appointments WHERE client_id = ?' if user['role'] == 'klients' else 'SELECT * FROM appointments ORDER BY request_date ASC', 
+                            (user['id'],) if user['role'] == 'klients' else ()).fetchall()
+    conn.close()
+    return render_template('appointments.html', appointments=app_list)
+
+@app.route('/submit_appointment', methods=['GET', 'POST'])
+def submit_appointment():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        data = request.form
+        conn = database_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (session['username'],)).fetchone()
+        client = conn.execute('SELECT * FROM clients WHERE user_id = ?', (user['id'],)).fetchone()
+        conn.execute('INSERT INTO appointments (client_id, issue, car_model, reg_number, request_date, status) VALUES (?, ?, ?, ?, ?, ?)',
+                     (client['id'], data['issue'], data['car_model'], data['reg_number'], datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'jauns'))
+        conn.commit()
+        conn.close()
+        flash('Appointment submitted successfully!', 'success')
+        return redirect(url_for('appointments'))
+    return render_template('submit_appointment.html')
+
+@app.route('/manage_appointments/<int:app_id>', methods=['GET', 'POST'])
+def manage_appointments(app_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    conn = database_connection()
+    appointment = conn.execute('SELECT * FROM appointments WHERE id = ?', (app_id,)).fetchone()
+    if request.method == 'POST':
+        conn.execute('UPDATE appointments SET status = ? WHERE id = ?', (request.form['status'], app_id))
+        conn.commit()
+        flash('Appointment updated successfully!', 'success')
+        return redirect(url_for('appointments'))
+    conn.close()
+    return render_template('manage_appointments.html', appointment=appointment)
+
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if username == 'admin111' and password == '12345': # LIETOTĀJVĀRDS UN PAROLE, KURUS JĀIEVĀDA, LAI IEETU ADMIN PROFILĀ
+            session['username'] = username
+            session['role'] = 'admin'
+            return redirect(url_for('admin_profile'))
+        else:
+            flash('Nepareizs lietotājvārds vai parole!', 'kļūda')
+
+    return render_template('admin_login.html')
+
+@app.route('/admin_profile')
+def admin_profile():
+    if 'username' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = database_connection()
+    clients = conn.execute('SELECT * FROM clients').fetchall() # dabū visu klientu sarakstu no datubāzes
+
+    # dabū visu pieteikumu sarakstu no datubāzes
+    appointments = conn.execute('''
+        SELECT appointments.*, clients.first_name, clients.last_name
+        FROM appointments
+        JOIN clients ON appointments.client_id = clients.id
+        ORDER BY appointments.request_date DESC
+    ''').fetchall()
+    
+    conn.close()
+    return render_template('admin_profile.html', clients=clients, appointments=appointments)
+
+# LAI MAINĪTU PIETEIKUMU STATUSUS
+@app.route('/update_status/<int:app_id>/<string:new_status>', methods=['POST'])
+def update_status(app_id, new_status):
+    if 'username' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = database_connection()
+    conn.execute('UPDATE appointments SET status = ? WHERE id = ?', (new_status, app_id))
+    conn.commit()
+    conn.close()
+
+    flash(f'Zīmeja statuss mainīts uz "{new_status}"!', 'success')
+    return redirect(url_for('admin_profile'))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
